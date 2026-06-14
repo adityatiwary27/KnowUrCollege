@@ -4,6 +4,7 @@ import com.example.socialapp.model.User;
 import com.example.socialapp.service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
 
 import java.util.List;
 
@@ -19,6 +20,12 @@ public class UserController {
     @PostMapping
     public ResponseEntity<User> create(@RequestBody User user) {
         return ResponseEntity.ok(userService.create(user));
+    }
+
+    @PostMapping("/register")
+    public ResponseEntity<User> register(@Valid @RequestBody User user) {
+        User created = userService.registerUser(user);
+        return ResponseEntity.ok(created);
     }
 
     @GetMapping

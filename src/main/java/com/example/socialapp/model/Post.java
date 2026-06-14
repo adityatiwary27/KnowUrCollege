@@ -1,6 +1,7 @@
 package com.example.socialapp.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 
 import java.time.Instant;
 
@@ -16,9 +17,15 @@ public class Post {
     private User user;
 
     @Column(columnDefinition = "TEXT")
+    @NotBlank
     private String content;
 
     private Instant createdAt = Instant.now();
+
+    // Publicly accessible image URL (uploaded to Cloudinary)
+    private String imageUrl;
+    // Cloudinary public id for the uploaded image (useful for deletions/transformations)
+    private String imagePublicId;
 
     public Post() {
     }
@@ -28,6 +35,22 @@ public class Post {
         this.user = user;
         this.content = content;
         this.createdAt = createdAt;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+
+    public String getImagePublicId() {
+        return imagePublicId;
+    }
+
+    public void setImagePublicId(String imagePublicId) {
+        this.imagePublicId = imagePublicId;
     }
 
     public Long getId() {

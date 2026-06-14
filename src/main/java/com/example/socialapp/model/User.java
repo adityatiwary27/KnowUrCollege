@@ -1,8 +1,12 @@
 package com.example.socialapp.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Table(name = "users")
@@ -12,22 +16,31 @@ public class User {
     private Long id;
 
     @Column(nullable = false, unique = true)
+    @NotBlank
     private String username;
 
     @Column(nullable = false, unique = true)
+    @NotBlank
     private String email;
+
+    @JsonIgnore
+    private String password;
 
     private String bio;
 
     private Instant createdAt = Instant.now();
 
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Post> posts = new ArrayList<>();
+
     public User() {
     }
 
-    public User(Long id, String username, String email, String bio, Instant createdAt) {
+    public User(Long id, String username, String email, String password, String bio, Instant createdAt) {
         this.id = id;
         this.username = username;
         this.email = email;
+        this.password = password;
         this.bio = bio;
         this.createdAt = createdAt;
     }
@@ -60,6 +73,14 @@ public class User {
         return bio;
     }
 
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
     public void setBio(String bio) {
         this.bio = bio;
     }
@@ -70,5 +91,13 @@ public class User {
 
     public void setCreatedAt(Instant createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public List<Post> getPosts() {
+        return posts;
+    }
+
+    public void setPosts(List<Post> posts) {
+        this.posts = posts;
     }
 }
