@@ -11,19 +11,22 @@ import java.util.Map;
 @Service
 public class CloudinaryService {
     private final Cloudinary cloudinary;
+    private final boolean enabled;
 
     public CloudinaryService() {
         // Expect CLOUDINARY_URL env var (e.g. cloudinary://API_KEY:API_SECRET@CLOUD_NAME)
         String url = System.getenv("CLOUDINARY_URL");
         if (url != null && !url.isBlank()) {
             this.cloudinary = new Cloudinary(url);
+            this.enabled = true;
         } else {
             this.cloudinary = new Cloudinary(ObjectUtils.emptyMap());
+            this.enabled = false;
         }
     }
 
     public java.util.Map<String, String> upload(MultipartFile file) throws IOException {
-        if (file == null || file.isEmpty()) return java.util.Collections.emptyMap();
+        if (file == null || file.isEmpty() || !enabled) return java.util.Collections.emptyMap();
         @SuppressWarnings("unchecked")
         java.util.Map<String, Object> uploadResult = cloudinary.uploader().upload(file.getBytes(), ObjectUtils.emptyMap());
         Object url = uploadResult.get("secure_url");
@@ -35,7 +38,7 @@ public class CloudinaryService {
     }
 
     public java.util.Map destroyByPublicId(String publicId) throws IOException {
-        if (publicId == null || publicId.isBlank()) return java.util.Collections.emptyMap();
+        if (publicId == null || publicId.isBlank() || !enabled) return java.util.Collections.emptyMap();
         return cloudinary.uploader().destroy(publicId, ObjectUtils.emptyMap());
     }
 }

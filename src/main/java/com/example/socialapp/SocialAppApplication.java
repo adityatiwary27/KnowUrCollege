@@ -6,6 +6,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 public class SocialAppApplication {
     public static void main(String[] args) {
-        SpringApplication.run(SocialAppApplication.class, args);
+        var ctx = SpringApplication.run(SocialAppApplication.class, args);
+        System.out.println("SocialApp started. Active profiles: " + java.util.Arrays.toString(ctx.getEnvironment().getActiveProfiles()));
     }
 }

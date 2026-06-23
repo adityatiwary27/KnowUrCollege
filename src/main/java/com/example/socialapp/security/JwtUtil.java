@@ -14,8 +14,9 @@ public class JwtUtil {
 
     public JwtUtil(String secret, long validityMillis) {
         if (secret == null || secret.isBlank()) {
-            // generate random key if not provided (not for production)
-            this.signingKey = Keys.secretKeyFor(SignatureAlgorithm.HS256);
+            // use a stable default dev secret when not provided (development only)
+            String dev = "dev-secret-please-change-this-to-a-secure-key";
+            this.signingKey = Keys.hmacShaKeyFor(dev.getBytes());
         } else {
             this.signingKey = Keys.hmacShaKeyFor(secret.getBytes());
         }

@@ -1,0 +1,204 @@
+Project Snapshot — Photo Library (ready-to-paste)
+==================================================
+Purpose: concise, copy-pasteable snapshot of the repository state, changes made, env placeholders, run commands, endpoints, examples, and next steps for another assistant or developer to continue.
+
+Repository: Photo Library (Spring Boot, Maven, Java 21)
+Root files of interest (paths to inspect):
+- `pom.xml`
+- `src/main/resources/application.properties`
+- `src/main/java/com/example/socialapp/service/CloudinaryService.java`
+- `src/main/java/com/example/socialapp/controller/CloudinaryController.java`
+- `src/main/java/com/example/socialapp/controller/PostController.java`
+- `src/main/java/com/example/socialapp/service/PostService.java`
+- `src/main/java/com/example/socialapp/service/UserService.java`
+- `src/main/java/com/example/socialapp/controller/AuthController.java`
+- `src/main/java/com/example/socialapp/controller/AdminController.java`
+- `src/main/java/com/example/socialapp/security/SecurityConfig.java`
+- `src/main/java/com/example/socialapp/security/JwtUtil.java`
+- `src/main/java/com/example/socialapp/security/JwtAuthenticationFilter.java`
+
+High-level summary of work done
+- Project set to Java 21 in `pom.xml`.
+- Dependencies added:
+  - Cloudinary SDK: `com.cloudinary:cloudinary-http44`
+  - Argon2: `de.mkammerer:argon2-jvm`
+  - Spring Security
+  - JJWT (io.jsonwebtoken)
+  - H2 (runtime fallback)
+- Cloudinary integration:
+  - `CloudinaryService` added: upload and destroy helper methods reading `CLOUDINARY_URL`.
+  - `CloudinaryController` added: `POST /api/cloudinary/sign` — returns signature for direct client uploads.
+- Posts:
+  - `Post` model updated with `imageUrl` and `imagePublicId`.
+  - `PostController` supports JSON create and multipart create with `post` JSON + `image` file part (server uploads to Cloudinary).
+  - `PostService.createWithImage(...)` stores Cloudinary `secure_url` and `public_id`.
+- Users & Auth:
+  - `UserService` uses Argon2 for hashing; `authenticate(...)` verifies password.
+  - `AuthController` exposes `POST /api/auth/login` returning JWT.
+- Security:
+  - JWT utilities and an auth filter added.
+  - `SecurityConfig` allows public GETs on `/api/**`, requires auth for POST/PUT/DELETE, and permits auth endpoints.
+- Admin:
+  - `AdminController` exposes `DELETE /api/admin/posts/{id}/image` to remove Cloudinary resource and clear DB values (requires JWT).
+- DB:
+  - `application.properties` uses `JDBC_DATABASE_*` env vars if provided, otherwise defaults to an H2 in-memory fallback (`jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;MODE=MySQL`) for local dev.
+  - Hibernate `ddl-auto=update` used for now; created/altered `users` and `posts` tables during testing.
+
+Required environment variables (placeholders)
+- CLOUDINARY_URL (required for real Cloudinary usage)
+  - Format: cloudinary://<API_KEY>:<API_SECRET>@<CLOUD_NAME>
+  - Example (DO NOT commit): cloudinary://352824742578896:YOUR_SECRET@your_cloud_name
+- Optional DB (if you want MySQL instead of H2 fallback):
+  - JDBC_DATABASE_URL (e.g., jdbc:mysql://db-host:3306/yourdb)
+  - JDBC_DATABASE_USERNAME
+  - JDBC_DATABASE_PASSWORD
+- JWT_SECRET (optional — default: random at startup; set for production)
+- JWT_TTL_MS (optional — token lifetime in ms)
+- APP_FRONTEND_URL (optional — CORS origin, default http://localhost:3000)
+- SERVER_PORT (optional — default 8081)
+
+How to run locally (copy/paste)
+1) Set env vars (PowerShell examples — replace placeholders):
+```powershell
+setx CLOUDINARY_URL "cloudinary://<API_KEY>:<API_SECRET>@<CLOUD_NAME>"
+# Optional MySQL:
+setx JDBC_DATABASE_URL "jdbc:mysql://localhost:3306/college_app"
+setx JDBC_DATABASE_USERNAME "root"
+setx JDBC_DATABASE_PASSWORD "your_db_password"
+# Current session:
+$env:CLOUDINARY_URL="cloudinary://<API_KEY>:<API_SECRET>@<CLOUD_NAME>"
+$env:JDBC_DATABASE_URL="jdbc:mysql://localhost:3306/college_app"
+$env:JDBC_DATABASE_USERNAME="root"
+$env:JDBC_DATABASE_PASSWORD="your_db_password"
+```
+
+2) Build and run:
+```bash
+mvn -DskipTests package
+mvn -DskipTests spring-boot:run
+```
+
+Behavior notes:
+- If MySQL creds are invalid or not set, the app uses an in-memory H2 DB (so the app will start and you can test endpoints).
+- On first run (H2), Hibernate will create `users` and `posts` tables and add `image_url` / `image_public_id`.
+- App default port: 8081 (override with `SERVER_PORT`).
+
+API endpoints & examples
+- Register user (hashes password):
+  - POST `/api/users/register`
+  - Body example:
+    ```json
+    {"username":"alice","email":"alice@example.com","password":"secret"}
+    ```
+- Login (get JWT):
+  - POST `/api/auth/login`
+  - Body example:
+    ```json
+    {"username":"alice","password":"secret"}
+    ```
+  - Response:
+    ```json
+    {"token":"<JWT_TOKEN>"}
+    ```
+
+- Create post (JSON):
+  - POST `/api/posts`
+  - Body example:
+    ```json
+    {"user":{"id":1},"content":"Hello world"}
+    ```
+
+- Create post with image (server uploads to Cloudinary)
+  - POST `/api/posts` as multipart/form-data:
+    - Part `post` = JSON string (application/json)
+    - Part `image` = file
+  - Curl example:
+    ```bash
+    curl -X POST \
+      -H "Accept: application/json" \
+      -F 'post={"user":{"id":1},"content":"Hello with image"};type=application/json' \
+      -F "image=@/path/to/photo.jpg" \
+      http://localhost:8081/api/posts
+    ```
+  - Response includes `imageUrl` (Cloudinary secure URL) and `imagePublicId`.
+
+- Direct signed upload flow (recommended for large files)
+  1. Backend: request signature
+     - POST `/api/cloudinary/sign` with optional body params (e.g., `{"folder":"user_uploads"}`)
+     - Response: `{"api_key":"...","cloud_name":"...","timestamp":123456,"signature":"..."}`
+
+  2. Frontend: upload directly to Cloudinary:
+     - Upload URL: `https://api.cloudinary.com/v1_1/<cloud_name>/auto/upload`
+     - Form fields to include: `file`, `api_key`, `timestamp`, `signature`, plus any signed params.
+     - After upload Cloudinary returns `secure_url` and `public_id`. Then call your backend to create a Post referencing those values, or you can send a webhook.
+
+  - Example server signing request (curl):
+    ```bash
+    curl -X POST -H "Content-Type: application/json" -d '{"folder":"user_uploads"}' http://localhost:8081/api/cloudinary/sign
+    ```
+
+  - Example minimal client JS (browser) to request signature and upload file:
+    ```javascript
+    async function signAndUpload(file) {
+      // 1) get signature from backend
+      const signResp = await fetch('/api/cloudinary/sign', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({folder: 'user_uploads'})
+      });
+      const sign = await signResp.json(); // { api_key, cloud_name, timestamp, signature }
+
+      // 2) upload to Cloudinary directly
+      const form = new FormData();
+      form.append('file', file);
+      form.append('api_key', sign.api_key);
+      form.append('timestamp', sign.timestamp);
+      form.append('signature', sign.signature);
+      // include folder if used:
+      form.append('folder', 'user_uploads');
+
+      const uploadUrl = `https://api.cloudinary.com/v1_1/${sign.cloud_name}/auto/upload`;
+      const uploadResp = await fetch(uploadUrl, { method: 'POST', body: form });
+      const uploadJson = await uploadResp.json();
+      // uploadJson.secure_url and uploadJson.public_id are returned
+      return uploadJson;
+    }
+    ```
+
+- Delete post image (admin)
+  - DELETE `/api/admin/posts/{id}/image`
+  - Requires Authorization header: `Authorization: Bearer <JWT_TOKEN>`
+  - Example:
+    ```bash
+    curl -X DELETE -H "Authorization: Bearer <JWT_TOKEN>" http://localhost:8081/api/admin/posts/<POST_ID>/image
+    ```
+
+How Cloudinary is wired in code (quick pointers)
+- `CloudinaryService` constructor reads `CLOUDINARY_URL` env var and constructs `new Cloudinary(url)`. Methods:
+  - `upload(MultipartFile)` → returns map with `url` and `public_id`.
+  - `destroyByPublicId(String)` → deletes resource.
+- `PostService.createWithImage(...)` calls `cloudinaryService.upload(...)` if `image` present and stores `imageUrl` and `imagePublicId` in `Post`.
+- `CloudinaryController` builds signature for signed direct uploads using `CLOUDINARY_URL` secret.
+
+Security notes & cautions
+- I used `hibernate.ddl-auto=update` for quick verification; migrate to Flyway/Liquibase for production.
+- `JWT_SECRET` should be set in production (not randomly generated) and stored in secrets manager.
+- Do not commit `CLOUDINARY_URL` or DB credentials.
+- The current security config permits GETs publicly and protects mutation endpoints; adjust roles/authorities for production.
+
+Current status (as of this snapshot)
+- `mvn -DskipTests package` → BUILD SUCCESS
+- `mvn -DskipTests spring-boot:run` → app starts on port 8081; H2 used if MySQL not configured.
+- `GET /api/posts` returned HTTP 200 during validation.
+
+Suggested next tasks you can assign to ChatGPT or a dev
+- Add Flyway migrations for current schema.
+- Add role-based authorization and an admin role for destructive endpoints.
+- Add OpenAPI (springdoc) and basic API docs.
+- Add unit/integration tests (mock Cloudinary or use a test account).
+- Add logging/metrics and production-ready CORS/security headers.
+- Add a webhook or server confirmation endpoint to create Post records after direct client upload (optional).
+
+If you want this snapshot as a single file in the repo, save this content into e.g. `PROJECT_SNAPSHOT.txt` and hand it to the next assistant.
+
+End of snapshot.
