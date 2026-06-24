@@ -14,10 +14,12 @@ import java.util.List;
 public class PostService {
     private final PostRepository postRepository;
     private final UserRepository userRepository;
+    private final CloudinaryService cloudinaryService;
 
-    public PostService(PostRepository postRepository, UserRepository userRepository) {
+    public PostService(PostRepository postRepository, UserRepository userRepository, CloudinaryService cloudinaryService) {
         this.postRepository = postRepository;
         this.userRepository = userRepository;
+        this.cloudinaryService = cloudinaryService;
     }
 
     public Post create(Post post) {
@@ -28,13 +30,13 @@ public class PostService {
         return postRepository.save(post);
     }
 
-    public Post createWithImage(Post post, MultipartFile image, CloudinaryService cloudinaryService) throws IOException {
+    public Post createWithImage(Post post, MultipartFile image, CloudinaryService unusedCloudinaryService) throws IOException {
         if (post.getUser() != null && post.getUser().getId() != null) {
             Long uid = post.getUser().getId();
             userRepository.findById(uid).ifPresent(post::setUser);
         }
         if (image != null && !image.isEmpty()) {
-            java.util.Map<String, String> upload = cloudinaryService.upload(image);
+            java.util.Map<String, String> upload = this.cloudinaryService.upload(image);
             if (upload.containsKey("url")) post.setImageUrl(upload.get("url"));
             if (upload.containsKey("public_id")) post.setImagePublicId(upload.get("public_id"));
         }
@@ -55,12 +57,22 @@ public class PostService {
 
     public Post update(Long id, Post updated) {
         return postRepository.findById(id).map(p -> {
-            p.setContent(updated.getContent());
+            if (updated.getContent() != null) p.setContent(updated.getContent());
+            if (updated.getLocation() != null) p.setLocation(updated.getLocation());
             return postRepository.save(p);
         }).orElse(null);
     }
 
     public void delete(Long id) {
-        postRepository.deleteById(id);
+        postRepository.findById(id).ifPresent(p -> {
+            if (p.getImagePublicId() != null) {
+                try {
+                    this.cloudinaryService.destroyByPublicId(p.getImagePublicId());
+                } catch (IOException e) {
+                    // Log or ignore delete error
+                }
+            }
+            postRepository.deleteById(id);
+        });
     }
 }

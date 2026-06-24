@@ -21,10 +21,14 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody Map<String, String> body) {
-        String username = body.get("username");
+        String identifier = body.get("identifier");
+        if (identifier == null) {
+            identifier = body.get("username");
+            if (identifier == null) identifier = body.get("email");
+        }
         String password = body.get("password");
-        if (username == null || password == null) return ResponseEntity.badRequest().body("username and password required");
-        User u = userService.authenticate(username, password);
+        if (identifier == null || password == null) return ResponseEntity.badRequest().body("username/email and password required");
+        User u = userService.authenticate(identifier, password);
         if (u == null) return ResponseEntity.status(401).body("invalid credentials");
         String token = jwtUtil.generateToken(u.getUsername());
         return ResponseEntity.ok(Map.of("token", token));

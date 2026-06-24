@@ -20,6 +20,8 @@ public class Post {
     @NotBlank
     private String content;
 
+    private String location;
+
     private Instant createdAt = Instant.now();
 
     // Publicly accessible image URL (uploaded to Cloudinary)
@@ -35,6 +37,14 @@ public class Post {
         this.user = user;
         this.content = content;
         this.createdAt = createdAt;
+    }
+
+    public String getLocation() {
+        return location;
+    }
+
+    public void setLocation(String location) {
+        this.location = location;
     }
 
     public String getImageUrl() {

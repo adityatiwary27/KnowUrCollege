@@ -8,8 +8,11 @@ import java.util.ArrayList;
 import java.util.List;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 @Entity
 @Table(name = "users")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -33,6 +36,19 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @com.fasterxml.jackson.annotation.JsonIgnore
     private List<Post> posts = new ArrayList<>();
+
+    @ManyToMany
+    @JoinTable(
+        name = "user_following",
+        joinColumns = @JoinColumn(name = "user_id"),
+        inverseJoinColumns = @JoinColumn(name = "following_id")
+    )
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    private java.util.Set<User> following = new java.util.HashSet<>();
+
+    @ManyToMany(mappedBy = "following")
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    private java.util.Set<User> followers = new java.util.HashSet<>();
 
     public User() {
     }
@@ -100,5 +116,31 @@ public class User {
 
     public void setPosts(List<Post> posts) {
         this.posts = posts;
+    }
+
+    public java.util.Set<User> getFollowing() {
+        return following;
+    }
+
+    public void setFollowing(java.util.Set<User> following) {
+        this.following = following;
+    }
+
+    public java.util.Set<User> getFollowers() {
+        return followers;
+    }
+
+    public void setFollowers(java.util.Set<User> followers) {
+        this.followers = followers;
+    }
+
+    @com.fasterxml.jackson.annotation.JsonProperty("followerCount")
+    public int getFollowerCount() {
+        return followers != null ? followers.size() : 0;
+    }
+
+    @com.fasterxml.jackson.annotation.JsonProperty("followingCount")
+    public int getFollowingCount() {
+        return following != null ? following.size() : 0;
     }
 }

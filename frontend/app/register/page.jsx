@@ -17,8 +17,18 @@ export default function RegisterPage() {
     setLoading(true);
     setError(null);
     try {
+      // 1. Register the user
       await api.post("/users/register", { username, email, password });
-      router.push("/login");
+      
+      // 2. Automatically log them in
+      const res = await api.post("/auth/login", { username, email, password });
+      const token = res.data?.token ?? res.data?.accessToken ?? res.data;
+      if (token) {
+        localStorage.setItem("token", typeof token === "string" ? token : JSON.stringify(token));
+        router.push("/feed");
+      } else {
+        router.push("/login"); // Fallback if no token returned
+      }
     } catch (err) {
       console.error("Register error:", err);
       setError(err?.response?.data?.message || err?.message || "Registration failed");

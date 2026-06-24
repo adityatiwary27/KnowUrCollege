@@ -58,6 +58,10 @@ public class UserService {
         return userRepository.findById(id).orElse(null);
     }
 
+    public User getByUsername(String username) {
+        return userRepository.findByUsername(username).orElse(null);
+    }
+
     public User update(Long id, User updated) {
         return userRepository.findById(id).map(u -> {
             u.setUsername(updated.getUsername());
@@ -67,17 +71,44 @@ public class UserService {
         }).orElse(null);
     }
 
-    public User authenticate(String username, String password) {
-        return userRepository.findByUsername(username).filter(u -> {
-            String hashed = u.getPassword();
-            if (hashed == null || hashed.isBlank()) return false;
-            char[] pwd = password.toCharArray();
-            try {
-                return argon2.verify(hashed, pwd);
-            } finally {
-                java.util.Arrays.fill(pwd, '\0');
+    public User authenticate(String identifier, String password) {
+        User u = userRepository.findByUsername(identifier).orElse(null);
+        if (u == null) {
+            u = userRepository.findByEmail(identifier).orElse(null);
+        }
+        if (u == null) return null;
+
+        String hashed = u.getPassword();
+        if (hashed == null || hashed.isBlank()) return null;
+        char[] pwd = password.toCharArray();
+        try {
+            if (argon2.verify(hashed, pwd)) {
+                return u;
             }
-        }).orElse(null);
+            return null;
+        } finally {
+            java.util.Arrays.fill(pwd, '\0');
+        }
+    }
+
+    @org.springframework.transaction.annotation.Transactional
+    public void followUser(Long followerId, Long targetId) {
+        User follower = userRepository.findById(followerId).orElse(null);
+        User target = userRepository.findById(targetId).orElse(null);
+        if (follower != null && target != null && !follower.getId().equals(target.getId())) {
+            follower.getFollowing().add(target);
+            userRepository.save(follower);
+        }
+    }
+
+    @org.springframework.transaction.annotation.Transactional
+    public void unfollowUser(Long followerId, Long targetId) {
+        User follower = userRepository.findById(followerId).orElse(null);
+        User target = userRepository.findById(targetId).orElse(null);
+        if (follower != null && target != null) {
+            follower.getFollowing().remove(target);
+            userRepository.save(follower);
+        }
     }
 
     public void delete(Long id) {
