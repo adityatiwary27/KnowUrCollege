@@ -7,7 +7,7 @@ COPY src ./src
 RUN mvn clean package -DskipTests
 
 # Stage 2: Create the runtime image
-FROM eclipse-temurin:21-jre-alpine
+FROM eclipse-temurin:21-jre-jammy
 WORKDIR /app
 # Copy the built jar file from the builder stage
 COPY --from=builder /app/target/socialapp-0.0.1-SNAPSHOT.jar app.jar
