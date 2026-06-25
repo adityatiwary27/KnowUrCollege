@@ -55,13 +55,13 @@ export default function FeedPage() {
     }
   };
 
-  const handleDelete = async (postId) => {
-    if (!confirm("Are you sure you want to delete this post?")) return;
+  const handleDelete = async (postId, silent = false) => {
+    if (!silent && !confirm("Are you sure you want to delete this post?")) return;
     try {
       await api.delete(`/posts/${postId}`);
       setPosts((prev) => prev.filter(p => p.id !== postId));
     } catch (err) {
-      alert("Failed to delete post");
+      if (!silent) alert("Failed to delete post");
     }
   };
 
@@ -168,7 +168,20 @@ export default function FeedPage() {
               
               {p.imageUrl && (
                 <div className="w-full bg-black/5 overflow-hidden relative border-y border-theme/10">
-                  <img src={p.imageUrl} alt="post" className="w-full max-h-[600px] object-cover group-hover:scale-[1.02] transition duration-700" />
+                  <img 
+                    src={p.imageUrl} 
+                    alt="post" 
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                      if (currentUser && p.user?.id === currentUser.id) {
+                        handleDelete(p.id, true); // true = silent delete without confirm
+                      } else {
+                        // just remove from local state
+                        setPosts(prev => prev.filter(post => post.id !== p.id));
+                      }
+                    }}
+                    className="w-full max-h-[600px] object-cover group-hover:scale-[1.02] transition duration-700" 
+                  />
                   {p.location && (
                     <div className="absolute bottom-3 left-3 bg-black/60 backdrop-blur-md text-white text-xs px-3 py-1.5 rounded-full flex items-center gap-1 shadow-lg border border-white/10 glow-theme">
                       📍 {p.location}

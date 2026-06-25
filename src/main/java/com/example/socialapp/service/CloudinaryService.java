@@ -13,8 +13,8 @@ public class CloudinaryService {
     private final Cloudinary cloudinary;
     private final boolean enabled;
 
-    public CloudinaryService(@org.springframework.beans.factory.annotation.Value("${cloudinary.url:}") String propertyUrl) {
-        String url = propertyUrl != null && !propertyUrl.isBlank() ? propertyUrl : System.getenv("CLOUDINARY_URL");
+    public CloudinaryService(@org.springframework.beans.factory.annotation.Value("${app.cloudinary.url:}") String propertyUrl) {
+        String url = propertyUrl;
         if (url != null && !url.isBlank()) {
             String cleanUrl = url.replace("cloudinary://", "");
             String[] parts = cleanUrl.split("@");
@@ -63,5 +63,18 @@ public class CloudinaryService {
     public java.util.Map destroyByPublicId(String publicId) throws IOException {
         if (publicId == null || publicId.isBlank() || !enabled) return java.util.Collections.emptyMap();
         return cloudinary.uploader().destroy(publicId, ObjectUtils.emptyMap());
+    }
+
+    public boolean exists(String publicId) {
+        if (publicId == null || publicId.isBlank() || !enabled) return true;
+        try {
+            cloudinary.api().resource(publicId, ObjectUtils.emptyMap());
+            return true;
+        } catch (Exception e) {
+            if (e.getMessage() != null && e.getMessage().contains("Not found")) {
+                return false;
+            }
+            return true;
+        }
     }
 }
