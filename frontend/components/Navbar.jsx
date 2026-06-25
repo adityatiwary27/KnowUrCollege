@@ -23,10 +23,10 @@ export default function Navbar() {
   };
 
   return (
-    <div className="w-full flex justify-center py-4 px-4 sticky top-0 z-50">
-      <nav className="glass squircle w-full max-w-5xl px-6 py-3 flex items-center justify-between shadow-2xl glow-theme">
-        <div className="flex items-center gap-6">
-          <Link href="/" className="font-bold text-xl text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-indigo-500">KnowUr College</Link>
+    <div className="w-full flex justify-center py-2 sm:py-4 px-2 sm:px-4 sticky top-0 z-50">
+      <nav className="glass squircle w-full max-w-5xl px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between shadow-2xl glow-theme gap-y-3">
+        <div className="flex items-center gap-4 sm:gap-6 w-full sm:w-auto justify-center sm:justify-start">
+          <Link href="/" className="font-bold text-lg sm:text-xl text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-indigo-500 whitespace-nowrap">KnowUr College</Link>
           
           {/* Home button when logged in, or when on login/register pages */}
           {(isLoggedIn || pathname === "/login" || pathname === "/register") && (
@@ -41,7 +41,7 @@ export default function Navbar() {
           )}
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4 w-full sm:w-auto justify-center sm:justify-end">
           <ThemeToggle />
           
           {isLoggedIn && (

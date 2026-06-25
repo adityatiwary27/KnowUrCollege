@@ -38,7 +38,15 @@ export default function UploadPage() {
       if (res.data.hashtags) setHashtags(res.data.hashtags);
       if (res.data.location) setLocation(res.data.location);
     } catch (err) {
-      setError(err?.response?.data?.error || err?.message || "Failed to generate AI caption");
+      let errMsg = "Failed to generate AI caption";
+      if (err?.response?.data) {
+        errMsg = typeof err.response.data === 'string' 
+          ? err.response.data 
+          : (err.response.data.error || err.response.data.message || JSON.stringify(err.response.data));
+      } else if (err?.message) {
+        errMsg = err.message;
+      }
+      setError(errMsg);
     } finally {
       setGeneratingAi(false);
     }
@@ -59,7 +67,15 @@ export default function UploadPage() {
 
       router.push("/feed");
     } catch (err) {
-      setError(err?.response?.data || err?.message || "Failed to create post");
+      let errMsg = "Failed to create post";
+      if (err?.response?.data) {
+        errMsg = typeof err.response.data === 'string' 
+          ? err.response.data 
+          : (err.response.data.message || err.response.data.error || JSON.stringify(err.response.data));
+      } else if (err?.message) {
+        errMsg = err.message;
+      }
+      setError(errMsg);
     } finally {
       setSubmitting(false);
     }
