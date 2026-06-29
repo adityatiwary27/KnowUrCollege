@@ -18,10 +18,10 @@ export default function RegisterPage() {
     setError(null);
     try {
       // 1. Register the user
-      await api.post("/users/register", { username, email, password });
+      await api.post("/users/register", { username: username.trim(), email: email.trim(), password });
       
       // 2. Automatically log them in
-      const res = await api.post("/auth/login", { username, email, password });
+      const res = await api.post("/auth/login", { username: username.trim(), email: email.trim(), password });
       const token = res.data?.token ?? res.data?.accessToken ?? res.data;
       if (token) {
         localStorage.setItem("token", typeof token === "string" ? token : JSON.stringify(token));

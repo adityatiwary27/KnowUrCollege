@@ -125,6 +125,13 @@ body {
   border-color: var(--primary-from);
   box-shadow: var(--glow-shadow);
 }
+.input-theme:-webkit-autofill,
+.input-theme:-webkit-autofill:hover, 
+.input-theme:-webkit-autofill:focus, 
+.input-theme:-webkit-autofill:active {
+  transition: background-color 5000s ease-in-out 0s;
+  -webkit-text-fill-color: var(--theme-text) !important;
+}
 .muted { color: var(--theme-muted) !important; }
 
 /* Image hover */

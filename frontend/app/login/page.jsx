@@ -16,7 +16,7 @@ export default function LoginPage() {
     setLoading(true);
     setError(null);
       try {
-        const res = await api.post("/auth/login", { identifier, password });
+        const res = await api.post("/auth/login", { identifier: identifier.trim(), password });
         const token = res.data?.token ?? res.data?.accessToken ?? res.data;
         if (!token) throw new Error("No token returned from server");
         localStorage.setItem("token", typeof token === "string" ? token : JSON.stringify(token));
