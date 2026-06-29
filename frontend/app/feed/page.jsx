@@ -173,12 +173,6 @@ export default function FeedPage() {
                     alt="post" 
                     onError={(e) => {
                       e.target.style.display = 'none';
-                      if (currentUser && p.user?.id === currentUser.id) {
-                        handleDelete(p.id, true); // true = silent delete without confirm
-                      } else {
-                        // just remove from local state
-                        setPosts(prev => prev.filter(post => post.id !== p.id));
-                      }
                     }}
                     className="w-full max-h-[600px] object-cover group-hover:scale-[1.02] transition duration-700" 
                   />

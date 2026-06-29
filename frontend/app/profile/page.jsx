@@ -161,9 +161,6 @@ export default function ProfilePage() {
                   onError={(e) => {
                     const group = e.target.closest('.group');
                     if (group) group.style.display = 'none';
-                    if (user && user.id) {
-                      api.delete(`/posts/${post.id}`).catch(() => {});
-                    }
                   }}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4">
