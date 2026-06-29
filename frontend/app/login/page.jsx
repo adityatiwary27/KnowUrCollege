@@ -26,6 +26,8 @@ export default function LoginPage() {
         // Network errors give err.message === 'Network Error'
         if (err?.message === "Network Error") {
           setError("Cannot reach backend. Is http://localhost:8081 running?");
+        } else if (typeof err?.response?.data === "string") {
+          setError(err.response.data);
         } else {
           setError(err?.response?.data?.error || err?.response?.data?.message || err?.message || "Login failed");
         }
