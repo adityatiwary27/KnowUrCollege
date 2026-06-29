@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import ThemeToggle from "./ThemeToggle";
 
@@ -26,7 +27,10 @@ export default function Navbar() {
     <div className="w-full flex justify-center py-2 sm:py-4 px-2 sm:px-4 sticky top-0 z-50">
       <nav className="glass squircle w-full max-w-5xl px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between shadow-2xl glow-theme gap-y-3">
         <div className="flex items-center gap-4 sm:gap-6 w-full sm:w-auto justify-center sm:justify-start">
-          <Link href="/" className="font-bold text-lg sm:text-xl text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-indigo-500 whitespace-nowrap">KnowUr College</Link>
+          <Link href="/" className="flex items-center gap-3 font-bold text-lg sm:text-xl text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-indigo-500 whitespace-nowrap">
+            <Image src="/logo.png" alt="KnowUrCollege Logo" width={36} height={36} className="rounded-xl object-contain drop-shadow-md" />
+            KnowUr College
+          </Link>
           
           {/* Home button when logged in, or when on login/register pages */}
           {(isLoggedIn || pathname === "/login" || pathname === "/register") && (
