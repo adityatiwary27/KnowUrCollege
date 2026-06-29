@@ -29,7 +29,7 @@ export default function Navbar() {
         <div className="flex items-center gap-4 sm:gap-6 w-full sm:w-auto justify-center sm:justify-start">
           <Link href="/" className="flex items-center gap-3 font-bold text-lg sm:text-xl text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-indigo-500 whitespace-nowrap">
             <Image src="/logo.png" alt="KnowUrCollege Logo" width={36} height={36} className="rounded-xl object-contain drop-shadow-md" />
-            KnowUr College
+            KnowUrCollege
           </Link>
           
           {/* Home button when logged in, or when on login/register pages */}

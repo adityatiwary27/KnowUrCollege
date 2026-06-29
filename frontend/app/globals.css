@@ -7,7 +7,7 @@
   --accent: #ff007f; /* Neon pink */
   --bg-light: #f0f4f8;
   --text-light: #0f172a;
-  --card-light: rgba(255, 255, 255, 0.7);
+  --card-light: rgba(255, 255, 255, 0.9);
   --theme-bg: var(--bg-light);
   --theme-text: var(--text-light);
   --theme-card: var(--card-light);
@@ -19,7 +19,7 @@
 .dark {
   --bg-dark: #050b14;
   --text-dark: #e2e8f0;
-  --card-dark: rgba(15, 23, 42, 0.6);
+  --card-dark: rgba(15, 23, 42, 0.9);
   --theme-bg: var(--bg-dark);
   --theme-text: var(--text-dark);
   --theme-card: var(--card-dark);

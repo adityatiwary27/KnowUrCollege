@@ -33,7 +33,7 @@ public class AiService {
             mimeType = "image/jpeg";
         }
 
-        String url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=" + apiKey;
+        String url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + apiKey;
 
         Map<String, Object> inlineData = new HashMap<>();
         inlineData.put("mimeType", mimeType);
@@ -63,12 +63,7 @@ public class AiService {
                 throw new Exception("Non-OK status from Gemini");
             }
         } catch (Exception e) {
-            // Fallback mock AI response if the API key is invalid or fails
-            Map<String, String> fallback = new HashMap<>();
-            fallback.put("caption", "A beautiful day on campus! Captured some amazing memories today. ✨");
-            fallback.put("hashtags", "#CampusLife #CollegeDays #StudentLife #Memories #Vibes");
-            fallback.put("location", "Campus Square");
-            return fallback;
+            throw new Exception("Gemini API call failed: " + e.getMessage());
         }
 
         try {
